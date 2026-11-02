@@ -64,7 +64,7 @@ The debug log writes a line to `crash.log` on every page turn, so leave it off e
 python tests/run_tests.py
 ```
 
-The runner needs `luajit`, `lua5.1` or `lua` on your PATH, or the `lupa` Python package (`pip install lupa`). It exits with code 1 if any test fails.
+The tests run on LuaJIT or Lua 5.1, the same Lua as KOReader, so code that only works in newer Lua versions fails here instead of on your device. The runner needs `luajit` on your PATH, the `lupa` Python package (`pip install lupa`, which includes LuaJIT), or `lua5.1`. It exits with code 1 if any test fails.
 
 ## License
 

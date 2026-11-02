@@ -1,0 +1,12 @@
+# Local Claude Code settings
+.claude/settings.local.json
+
+# Packaged plugin
+*.zip
+
+# Notes kept local (only the README is tracked)
+*.md
+!README.md
+
+# Python
+__pycache__/

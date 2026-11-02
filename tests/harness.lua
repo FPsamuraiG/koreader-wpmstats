@@ -262,4 +262,13 @@ short_pages[212] = 25
 wait(6); go(213)                      -- 250 wpm, but under the 30-word floor
 check("30-word floor before a typical page is known", pages() == before + 3)
 
+-- 20. Stats window labels pages as timed (re-reads can count a page twice).
+local shown
+require("ui/uimanager").show = function(_, widget) shown = widget end
+p:showStats()
+check("stats: book line says pages timed",
+    shown ~= nil and shown.text:find("This book: %d+ wpm %(.-, " .. pages() .. " pages timed%)") ~= nil)
+check("stats: recent line says pages timed",
+    shown.text:find("Last " .. #p.recent .. " pages timed: %d+ wpm") ~= nil)
+
 return table.concat(results, "\n")

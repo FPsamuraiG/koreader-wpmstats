@@ -719,10 +719,10 @@ function WpmStats:showStats()
     local lines = {
         _("Reading speed"),
         "",
-        line(T(_("Last %1 pages"), #self.recent), recent_words, recent_seconds),
+        line(T(_("Last %1 pages timed"), #self.recent), recent_words, recent_seconds),
         line(_("This session"), self.session.words, self.session.seconds),
         line(_("This book"), self.book.words, self.book.seconds,
-            T(_("%1 pages"), self.book.pages or 0)),
+            T(_("%1 pages timed"), self.book.pages or 0)),
         line(_("All books"), all.words, all.seconds),
     }
     local left = self:timeLeftText(calcWpm(self.book.words, self.book.seconds))

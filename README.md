@@ -56,6 +56,16 @@ The debug log writes a line to `crash.log` on every page turn, so leave it off e
 - Menu time is accurate to about ±3 seconds per visit (menus are checked every 3 seconds).
 - If KOReader's auto-standby is enabled, page times may be undercounted.
 
+## Feedback
+
+If your numbers look wrong, please [open an issue](https://github.com/FPsamuraiG/koreader-wpmstats/issues) and include the debug log:
+
+1. Turn on **Settings → Debug log** and read as you normally would until the problem shows up.
+2. Open KOReader's `crash.log` (on a Kobo: `.adds/koreader/crash.log`) and copy the lines that start with `wpmstats:`.
+3. Paste them into the issue, with a few words on what you were doing (for example "looked up a word, then went back two pages").
+
+Each line says which page was counted or skipped and why, which makes problems much easier to track down. Turn the debug log off again afterwards.
+
 ## Development
 
 `wpmstats.koplugin/main.lua` holds all the logic. `tests/harness.lua` runs scenario tests against a mocked KOReader:

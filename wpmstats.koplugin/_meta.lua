@@ -3,7 +3,6 @@
 
 local _ = require("gettext")
 return {
-    name = "wpmstats",
     fullname = _("Reading speed (WPM)"),
     description = _([[Tracks your reading speed in words per minute for reflowable books (EPUB, FB2…), alongside the built-in reading statistics.]]),
 }

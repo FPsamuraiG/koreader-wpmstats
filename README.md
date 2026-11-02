@@ -28,7 +28,7 @@ The menu appears under **Tools → Reading speed (WPM)** while a book is open.
 ## How it works
 
 - **Only new pages count.** The plugin times the furthest page you've reached in this session. A page is counted when you turn forward exactly one page from it. Skipped pages (TOC jumps, links, search) are never counted.
-- **Plausibility checks.** A page counts only if it has at least 20 words, you spent no longer than the max time per page on it, and the implied speed is below the max plausible speed. This filters out walking away, skimming and flipping.
+- **Plausibility checks.** A page counts only if it has enough words (at least 30, and at least 40% of a typical page at your current font size, so title pages and short chapter endings are skipped), you spent no longer than the max time per page on it, and the implied speed is below the max plausible speed. This filters out walking away, skimming and flipping.
 - **Going back.** A short look back (a few pages, a couple of minutes) keeps the current page's timing. A long one, such as a search or a TOC jump far back, discards that page. Re-reading behind your furthest page counts only after several plausible page turns in a row.
 - **Pauses.** Timers pause while the device sleeps and while any menu, dialog or popup (dictionary, footnotes) covers the page.
 - **Layout changes** (font, margins, rotation) restart timing without counting the current page.

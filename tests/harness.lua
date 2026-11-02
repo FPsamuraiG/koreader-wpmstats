@@ -45,16 +45,19 @@ package.preload["ui/time"] = function()
     return { monotonic = function() return clock end, to_s = function(v) return v end }
 end
 
-local WORDS = 250
+local words_per_page = 250 -- every page, unless listed in short_pages
+local short_pages = {}      -- page -> word count
 local page_count = 500
-local view_mode = "page"
 local current = 1
-local text = string.rep("word ", WORDS)
 
 local doc = {
     info = { has_pages = false },
     getPageXPointer = function(_, p) return p end,
-    getTextFromXPointers = function(_, a, b) return string.rep(text, b - a) end,
+    getTextFromXPointers = function(_, a, b)
+        local n = 0
+        for page = a, b - 1 do n = n + (short_pages[page] or words_per_page) end
+        return string.rep("word ", n)
+    end,
     getPageCount = function() return page_count end,
     getVisiblePageCount = function() return 1 end,
     getCurrentPage = function() return current end,
@@ -241,5 +244,22 @@ local n = #log_lines
 settings["wpm_stats_debug_log"] = nil
 wait(60); go(207)
 check("log: silent again when turned off", #log_lines == n)
+
+-- 19. Minimum words: 30, or 40% of a typical page in this layout.
+before = pages()
+short_pages[208] = 34                 -- title page (typical page: 250 words)
+wait(60); go(208)                     -- 207 counted
+wait(8); go(209)                      -- 208: 34 words at a plausible 255 wpm
+check("short page rejected vs typical page", pages() == before + 1)
+short_pages[209] = 130                -- half-full chapter end, over 40%
+wait(30); go(210)
+check("half-full page still counted", pages() == before + 2)
+words_per_page = 80; page_count = 530 -- bigger font: 80-word pages
+wait(5); go(211)                      -- layout change resets
+wait(20); go(212)                     -- 80 words would fail the old 100 minimum
+check("typical page relearned after layout change", pages() == before + 3)
+short_pages[212] = 25
+wait(6); go(213)                      -- 250 wpm, but under the 30-word floor
+check("30-word floor before a typical page is known", pages() == before + 3)
 
 return table.concat(results, "\n")

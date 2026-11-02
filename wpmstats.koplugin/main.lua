@@ -34,7 +34,9 @@ local WidgetContainer = require("ui/widget/container/widgetcontainer")
 local T = require("ffi/util").template
 local _ = require("gettext")
 
-local MIN_WORDS = 20      -- skip near-empty pages (chapter titles, images)
+local MIN_WORDS = 30      -- skip near-empty pages (chapter titles, images)
+local TYPICAL_SHARE = 0.4 -- also skip pages under 40% of a typical page...
+local TYPICAL_PAGES = 5   -- ...once this many pages in this layout counted
 local ROLLING_PAGES = 20  -- window for the "recent" speed
 local POLL_SECONDS = 3    -- how often to check whether a menu covers the page
 
@@ -122,6 +124,7 @@ function WpmStats:init()
     self.session = { words = 0, seconds = 0 }
     self.book = { words = 0, seconds = 0, pages = 0 }
     self.recent = {}
+    self.page_words = {}     -- words on recent counted pages in this layout
     self.show_in_footer = G_reader_settings:nilOrTrue("wpm_stats_footer")
     self.ui.menu:registerToMainMenu(self)
 end
@@ -219,8 +222,9 @@ function WpmStats:evaluate(page, timer, t_now)
     end
     local words = self:countWords(page)
     if not words then return nil, "could not count words" end
-    if words < MIN_WORDS then
-        return nil, string.format("too few words (%d)", words)
+    local min_words = self:minWords()
+    if words < min_words then
+        return nil, string.format("too few words (%d < %d)", words, min_words)
     end
     local wpm = words * 60 / seconds
     if wpm > self:getSetting("max_wpm") then
@@ -228,6 +232,24 @@ function WpmStats:evaluate(page, timer, t_now)
             words, seconds, math.floor(wpm + 0.5))
     end
     return { words = words, seconds = seconds }
+end
+
+-- Title pages, chapter ends and mostly-image pages have few words, so the
+-- time to turn the page dominates and a flip can pass the speed check.
+-- Compare with a typical page in the current layout (font size etc.).
+function WpmStats:minWords()
+    local n = #self.page_words
+    if n < TYPICAL_PAGES then return MIN_WORDS end
+    local sorted = {}
+    for i = 1, n do sorted[i] = self.page_words[i] end
+    table.sort(sorted)
+    local median
+    if n % 2 == 1 then
+        median = sorted[(n + 1) / 2]
+    else
+        median = (sorted[n / 2] + sorted[n / 2 + 1]) / 2
+    end
+    return math.max(MIN_WORDS, math.floor(median * TYPICAL_SHARE + 0.5))
 end
 
 function WpmStats:logSample(what, page, sample, reason)
@@ -253,6 +275,11 @@ function WpmStats:addSample(sample)
     table.insert(self.recent, { words = words, seconds = seconds })
     if #self.recent > ROLLING_PAGES then
         table.remove(self.recent, 1)
+    end
+
+    table.insert(self.page_words, words)
+    if #self.page_words > ROLLING_PAGES then
+        table.remove(self.page_words, 1)
     end
 
     local all = G_reader_settings:readSetting("wpm_stats_total")
@@ -550,6 +577,10 @@ function WpmStats:handlePageUpdate(new)
         else
             self:log("layout changed (%s -> %s), frontier reset at page %d",
                 tostring(self.layout_sig), sig, new)
+        end
+        if sig ~= self.layout_sig then
+            -- Words per page differ in the new layout; relearn what's typical.
+            self.page_words = {}
         end
         self.paused = false
         self.layout_sig = sig
